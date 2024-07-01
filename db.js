@@ -1,6 +1,7 @@
 const db = require("./conn");
 var schemaName = "sesi6";
 
+// Query untuk menambahkan data pertama (semua data)
 add = async (data) => {
   try {
     // console.log('data: ', data);
@@ -91,7 +92,7 @@ const getStudentsOrderByGrade = async () => {
   }
 };
 
-// hapus data siswa baru
+// hapus data siswa berdasarkan id (10)
 const deleteDataStudents = async (data) => {
   try {
     const selectQuery = `DELETE FROM sesi6.students WHERE student_id = 10;`;
@@ -120,6 +121,30 @@ const updateStudentScoreMath = async (studentId, newName) => {
     throw error;
   }
 };
+
+// 1. Tugas : Tarik semua data students & order berdasarkan created_date
+// Query untuk menampilkan semua data berdasarkan created date
+const getAllDataByCratedDate = async () => {
+  try {
+    const selectQuery = `SELECT * FROM sesi6.students ORDER BY created_date `;
+    const { rows } = await db.query(selectQuery);
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+};
+// 2. Tarik data students berdasarkan student_id (/:param)
+// Query untuk menampilkan data sesuai dengan request id pada postman
+const getStudentById = async (studentId) => {
+  try {
+    const selectQuery = `SELECT * FROM ${schemaName}.students WHERE student_id = $1;`;
+    const { rows } = await db.query(selectQuery, [studentId]);
+    return rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   add,
   addStudent,
@@ -129,4 +154,6 @@ module.exports = {
   getStudentsOrderByGrade,
   deleteDataStudents,
   updateStudentName,
+  getAllDataByCratedDate,
+  getStudentById,
 };

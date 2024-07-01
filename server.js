@@ -1,13 +1,15 @@
 const Fastify = require("fastify");
 const {
   add,
-  // getStudentsWithGradeA,
-  // getShowAllData,
-  // getStudentsOrderByName,
-  // getStudentsOrderByGrade,
-  // addStudent,
-  // deleteDataStudents,
-  // updateStudentName,
+  getStudentsWithGradeA,
+  getShowAllData,
+  getStudentsOrderByName,
+  getStudentsOrderByGrade,
+  addStudent,
+  deleteDataStudents,
+  updateStudentName,
+  getAllDataByCratedDate,
+  getStudentById,
 } = require("./db");
 
 const fastify = Fastify({
@@ -28,6 +30,7 @@ checkRateSiswa = (rataRataNilai) => {
     return "E";
   }
 };
+// Menambahkan Data siswa by postman
 fastify.route({
   method: "POST",
   url: "/students",
@@ -60,6 +63,32 @@ fastify.route({
       });
     }
   },
+});
+
+// 1. Tugas : Tarik semua data students & order berdasarkan created_date
+// Menampilkan data siswa mulali dari crated date
+fastify.get("/students", async (request, reply) => {
+  try {
+    const students = await getAllDataByCratedDate();
+    reply.send(students);
+  } catch (error) {
+    reply.status(500).send({ error: error.message });
+  }
+});
+// 2. Tarik data students berdasarkan student_id (/:param)
+// Menampilkan data sesuai dengan request id pada postman
+fastify.get("/students/:id", async (request, reply) => {
+  try {
+    const studentId = request.params.id;
+    const student = await getStudentById(studentId);
+    if (student) {
+      reply.send(student);
+    } else {
+      reply.status(404).send({ error: "Student not found" });
+    }
+  } catch (error) {
+    reply.status(500).send({ error: error.message });
+  }
 });
 
 const start = async () => {
