@@ -10,6 +10,8 @@ const {
   updateStudentName,
   getAllDataByCratedDate,
   getStudentById,
+  getStudentByName,
+  updateStudentScores,
 } = require("./db");
 
 const fastify = Fastify({
@@ -84,8 +86,61 @@ fastify.get("/students/:id", async (request, reply) => {
     if (student) {
       reply.send(student);
     } else {
-      reply.status(404).send({ error: "Student not found" });
+      reply.status(404).send({ error: " Id Student not found" });
     }
+  } catch (error) {
+    reply.status(500).send({ error: error.message });
+  }
+});
+
+// 3. tarik data students berdasarkan student_name (?queryParam)
+// Menampilkan data sesuai dengan request name pada postman di key param
+fastify.get("/students/name", async (request, reply) => {
+  try {
+    const studentName = request.query.name;
+    const students = await getStudentByName(studentName);
+    if (students.length > 0) {
+      reply.send(students);
+    } else {
+      reply.status(404).send({ error: "Name Student not found" });
+    }
+  } catch (error) {
+    reply.status(500).send({ error: error.message });
+  }
+});
+
+// 4. update nilai matematika, bahasa indonesia & ipa students berdasarkan student_id
+// mengupdate nilai mamtematika bahasa indonesia & ipa, beserta score and grade saat mengirim data pada request body
+fastify.put("/students/:id", async (request, reply) => {
+  try {
+    const studentId = request.params.id;
+    const { matematika, bahasa_indonesia, ipa } = request.body;
+    const score = getRateSiswa(matematika, bahasa_indonesia, ipa);
+    const grade = checkRateSiswa(score);
+    const updatedStudent = await updateStudentScores(
+      studentId,
+      matematika,
+      bahasa_indonesia,
+      ipa,
+      score,
+      grade
+    );
+    reply.send(updatedStudent);
+  } catch (error) {
+    reply.status(500).send({ error: error.message });
+  }
+});
+
+// 5. Hapus data siswa berdasarkan id
+// menghapus data jika input id di postman
+fastify.delete("/students/:id", async (request, reply) => {
+  try {
+    const studentId = request.params.id;
+    const deletedStudent = await deleteDataStudents(studentId);
+    reply.send({
+      status: "ok",
+      data: [studentId],
+    });
   } catch (error) {
     reply.status(500).send({ error: error.message });
   }
@@ -99,5 +154,4 @@ const start = async () => {
     process.exit(1);
   }
 };
-
 start();

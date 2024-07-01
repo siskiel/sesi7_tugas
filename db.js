@@ -5,7 +5,7 @@ var schemaName = "sesi6";
 add = async (data) => {
   try {
     // console.log('data: ', data);
-    const insertData = `INSERT INTO ${schemaName}.students (
+    const insertData = `INSERT INTO sesi6.students (
             student_name, math, indonesian, natural_sciences, score, grade
         ) values (
             $1, $2, $3, $4, $5, $6
@@ -51,10 +51,11 @@ const addStudent = async (newData) => {
     throw error;
   }
 };
+
 // menampilkan seluruh data siswa
 const getShowAllData = async () => {
   try {
-    const selectQuery = `SELECT * FROM ${schemaName}.students`;
+    const selectQuery = `SELECT * FROM sesi.students`;
     const { rows } = await db.query(selectQuery);
     return rows;
   } catch (error) {
@@ -92,16 +93,6 @@ const getStudentsOrderByGrade = async () => {
   }
 };
 
-// hapus data siswa berdasarkan id (10)
-const deleteDataStudents = async (data) => {
-  try {
-    const selectQuery = `DELETE FROM sesi6.students WHERE student_id = 10;`;
-    const { rows } = await db.query(selectQuery);
-    return rows;
-  } catch (error) {
-    throw error;
-  }
-};
 // udpate nama siswa
 const updateStudentName = async (studentId, newName) => {
   try {
@@ -137,8 +128,50 @@ const getAllDataByCratedDate = async () => {
 // Query untuk menampilkan data sesuai dengan request id pada postman
 const getStudentById = async (studentId) => {
   try {
-    const selectQuery = `SELECT * FROM ${schemaName}.students WHERE student_id = $1;`;
+    const selectQuery = `SELECT * FROM sesi6.students WHERE student_id = $1;`;
     const { rows } = await db.query(selectQuery, [studentId]);
+    return rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+// 3. Tarik data students berdasarkan student_name (?queryParam)
+// Query untuk menampilkan data sesuai dengan request name pada postman di key param
+const getStudentByName = async (studentName) => {
+  try {
+    const selectQuery = `SELECT * FROM sesi6.students WHERE student_name = $1`;
+    const { rows } = await db.query(selectQuery, [studentName]);
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+};
+// 4. update nilai matematika, bahasa indonesia & ipa students berdasarkan student_id
+// Query untuk mengupdate nilai mamtematika bahasa indonesia & ipa, beserta score and grade
+const updateStudentScores = async (
+  studentId,
+  matematika,
+  bahasa_indonesia,
+  ipa,
+  score,
+  grade
+) => {
+  try {
+    const updateQuery = `UPDATE sesi6.students SET math = $1, indonesian = $2, natural_sciences = $3, score = $4, grade = $5 WHERE student_id = $6 RETURNING *`;
+    const values = [matematika, bahasa_indonesia, ipa, score, grade, studentId];
+    const { rows } = await db.query(updateQuery, values);
+    return rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+// 5. Hapus data siswa berdasarkan id
+// Query hapus data
+const deleteDataStudents = async (studentId) => {
+  try {
+    const deleteQuery = `DELETE FROM sesi6.students WHERE student_id = $1 RETURNING *`;
+    const values = [studentId];
+    const { rows } = await db.query(deleteQuery, values);
     return rows[0];
   } catch (error) {
     throw error;
@@ -156,4 +189,6 @@ module.exports = {
   updateStudentName,
   getAllDataByCratedDate,
   getStudentById,
+  getStudentByName,
+  updateStudentScores,
 };
